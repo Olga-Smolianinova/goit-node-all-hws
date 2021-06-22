@@ -31,14 +31,14 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-    // для загрузки аватарки пользователя
+
     avatar: {
       type: String,
       default: function () {
         return gravatar.url(this.email, { s: "250" }, true);
       },
     },
-    // для отправки email
+
     verify: {
       type: Boolean,
       default: false,
