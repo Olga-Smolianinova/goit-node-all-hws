@@ -11,7 +11,6 @@ const { CreateEmailSenderSendgrid } = require("../services/email-sender");
 require("dotenv").config();
 
 const UploadAvatarService = require("../services/local-upload");
-// const { isError } = require("joi");
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -29,12 +28,10 @@ const signup = async (req, res, next) => {
     const { id, email, subscription, avatar, verifyToken } =
       await Users.createUser(req.body);
 
-    // отправляем письмо для верификации. Используем try/catch, т.к. не хотим, чтобы прерывалось выполнение отправки. Пользователя мы регистрируем в любом случае, даже если произошла ошибка при отправке письма, для этого выводим ошибку, что отправка письма не произошла и какая ошибка возникла
     try {
-      // создаем сервис
       const emailService = new EmailService(
-        process.env.NODE_ENV, // вбросили переменную окружения, где мы вообще находимся
-        new CreateEmailSenderSendgrid() // пробрасываем sender, и можем отправить что угодно
+        process.env.NODE_ENV,
+        new CreateEmailSenderSendgrid()
       );
 
       await emailService.sendVerifyEmail(verifyToken, email);
@@ -152,12 +149,10 @@ const avatars = async (req, res, next) => {
   }
 };
 
-// для отправки email c верификацией
 const verify = async (req, res, next) => {
   try {
     const user = await Users.findByVerifyToken(req.params.token);
 
-    // если пользователь найден - устанавливаем verificationToken в null, а поле verify ставим равным true в документе пользователя и возвращаем Успешный ответ
     if (user) {
       await Users.updateTokenVerify(user.id, true, null);
       return res.json({
@@ -176,7 +171,6 @@ const verify = async (req, res, next) => {
   }
 };
 
-// для повторной отправки email c верификацией, если до этого произошла ошибка
 const repeatEmailVerification = async (req, res, next) => {
   try {
     const user = await Users.findByEmail(req.body.email);
@@ -185,11 +179,9 @@ const repeatEmailVerification = async (req, res, next) => {
       const { email, verify, verifyToken } = user;
 
       if (!verify) {
-        // если пользователь не верефицировал свой email полностью повторяем отправку письма
-
         const emailService = new EmailService(
-          process.env.NODE_ENV, // вбросили переменную окружения, где мы вообще находимся
-          new CreateEmailSenderSendgrid() // пробрасываем sender, и можем отправить что угодно
+          process.env.NODE_ENV,
+          new CreateEmailSenderSendgrid()
         );
 
         await emailService.sendVerifyEmail(verifyToken, email);
@@ -199,7 +191,7 @@ const repeatEmailVerification = async (req, res, next) => {
           data: { message: "Verification email sent" },
         });
       }
-      // Если пользователь уже прошел верификацию
+
       return res.status(HttpCode.CONFLICT).json({
         status: "error",
         code: HttpCode.CONFLICT,
